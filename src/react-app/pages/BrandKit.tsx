@@ -14,6 +14,7 @@ import {
   Download,
   Settings
 } from 'lucide-react';
+import { getBrandKit, saveBrandKit } from '@/shared/apiClient';
 
 export default function BrandKit() {
   const [brandKit, setBrandKit] = useState({
@@ -40,6 +41,15 @@ export default function BrandKit() {
       document.head.appendChild(link);
     };
     loadFont();
+
+    async function fetchBrandKit() {
+        const result = await getBrandKit();
+        if(result.success && result.data) {
+            setBrandKit(result.data);
+        }
+    }
+    fetchBrandKit();
+
   }, []);
 
   const colorPresets = [
@@ -85,15 +95,7 @@ export default function BrandKit() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/brand-kit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(brandKit),
-      });
-
-      const result = await response.json();
+      const result = await saveBrandKit(brandKit);
       if (result.success) {
         // Handle success
         console.log('Brand kit saved successfully');

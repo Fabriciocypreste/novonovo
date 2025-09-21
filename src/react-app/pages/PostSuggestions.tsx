@@ -16,6 +16,7 @@ import {
   Share2,
   MessageCircle
 } from 'lucide-react';
+import { generatePostSuggestions } from '@/shared/apiClient';
 
 export default function PostSuggestions() {
   const [topic, setTopic] = useState('');
@@ -59,22 +60,9 @@ export default function PostSuggestions() {
     setPosts([]);
 
     try {
-      const response = await fetch('/api/generate/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: topic.trim(),
-          style,
-          platform,
-          count: 10
-        }),
-      });
-
-      const result = await response.json();
+      const result = await generatePostSuggestions(topic.trim(), style, platform);
       if (result.success) {
-        setPosts(result.data);
+        setPosts(result.data || []);
       } else {
         console.error('Generation failed:', result.error);
       }

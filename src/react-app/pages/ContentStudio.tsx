@@ -18,12 +18,22 @@ import {
   Upload,
   X
 } from 'lucide-react';
+import { generateContent, uploadImage } from '@/shared/apiClient';
+
+// Define a type for the generated content
+interface GeneratedContent {
+  theme: string;
+  post: { type: string; content: string; platform: string; provider: string; };
+  video: { type: string; content: string; platform: string; provider: string; };
+  landing: { type: string; content: string; platform: string; provider: string; };
+}
 
 export default function ContentStudio() {
   const [activeTab, setActiveTab] = useState('all');
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>([]);
 
   useEffect(() => {
     const loadFont = () => {
@@ -83,12 +93,7 @@ export default function ContentStudio() {
     formData.append('usage_type', 'reference');
 
     try {
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
+      const result = await uploadImage(formData);
       if (result.success) {
         setReferenceImage(result.data.url);
       }
@@ -101,25 +106,12 @@ export default function ContentStudio() {
     if (selectedThemes.length === 0) return;
     
     setIsGenerating(true);
+    setGeneratedContent([]); // Clear previous content
     
     try {
-      const response = await fetch('/api/generate/content', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          themes: selectedThemes,
-          content_types: ['post', 'video', 'landing_page'],
-          platforms: ['instagram', 'facebook', 'twitter', 'youtube', 'linkedin'],
-          reference_image: referenceImage
-        }),
-      });
-      
-      const result = await response.json();
+      const result = await generateContent(selectedThemes, referenceImage);
       if (result.success) {
-        // Handle successful generation
-        console.log('Generated content:', result.data);
+        setGeneratedContent(result.data);
       } else {
         console.error('Generation failed:', result.error);
       }
@@ -129,6 +121,14 @@ export default function ContentStudio() {
       setIsGenerating(false);
     }
   };
+
+  const filteredContent = generatedContent.flatMap(item => {
+    const content = [];
+    if (activeTab === 'all' || activeTab === 'posts') content.push(item.post);
+    if (activeTab === 'all' || activeTab === 'videos') content.push(item.video);
+    if (activeTab === 'all' || activeTab === 'landing') content.push(item.landing);
+    return content.map(c => ({...c, theme: item.theme}));
+  });
 
   return (
     <Layout>
@@ -299,63 +299,59 @@ export default function ContentStudio() {
                 ))}
               </div>
 
-              {/* Empty State */}
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-16 text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Sparkles className="w-10 h-10 text-purple-400" />
-                </div>
-                
-                <h3 className="text-2xl font-semibold text-white mb-4">
-                  Seus conteúdos aparecerão aqui
-                </h3>
-                <p className="text-white/70 mb-8 max-w-md mx-auto">
-                  Clique em "Gerar Tudo" para começar a criar conteúdo automático para seus temas selecionados.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2">
-                    <Plus className="w-5 h-5" />
-                    <span>Criar Manualmente</span>
-                  </button>
-                  <Link 
-                    to="/editor"
-                    className="border border-white/30 text-white px-8 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200"
-                  >
-                    Ir para Editor
-                  </Link>
-                </div>
-              </div>
-
-              {/* Content Grid - Would show generated content */}
-              {selectedThemes.length > 0 && (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-                  {selectedThemes.map((theme, index) => (
-                    <div key={index} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-4 mb-4">
-                        <h4 className="text-white font-semibold">{theme}</h4>
-                        <p className="text-white/80 text-sm">3 conteúdos gerados</p>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center space-x-3 text-white/70 text-sm">
-                          <FileText className="w-4 h-4 text-green-400" />
-                          <span>Post criado</span>
+              {/* Content Grid */}
+              {isGenerating ? (
+                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 animate-pulse">
+                            <div className="h-24 bg-white/10 rounded-lg mb-4"></div>
+                            <div className="h-4 bg-white/10 rounded w-3/4 mb-2"></div>
+                            <div className="h-4 bg-white/10 rounded w-1/2"></div>
                         </div>
-                        <div className="flex items-center space-x-3 text-white/70 text-sm">
-                          <Video className="w-4 h-4 text-blue-400" />
-                          <span>Vídeo gerado</span>
+                    ))}
+                 </div>
+              ) : filteredContent.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredContent.map((item, index) => (
+                    <div key={index} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-semibold uppercase text-purple-400">{item.type.replace('_', ' ')}</span>
+                                <span className="text-xs text-white/50">{item.provider}</span>
+                            </div>
+                            <p className="text-white/80 text-sm whitespace-pre-wrap h-32 overflow-y-auto">{item.content}</p>
                         </div>
-                        <div className="flex items-center space-x-3 text-white/70 text-sm">
-                          <Image className="w-4 h-4 text-purple-400" />
-                          <span>Landing page</span>
-                        </div>
-                      </div>
-                      
-                      <button className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200">
-                        Ver Conteúdos
-                      </button>
+                        <button className="w-full mt-4 bg-white/10 hover:bg-white/20 text-white py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200">
+                            Usar este conteúdo
+                        </button>
                     </div>
                   ))}
+                </div>
+              ) : (
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-16 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Sparkles className="w-10 h-10 text-purple-400" />
+                    </div>
+
+                    <h3 className="text-2xl font-semibold text-white mb-4">
+                    Seus conteúdos aparecerão aqui
+                    </h3>
+                    <p className="text-white/70 mb-8 max-w-md mx-auto">
+                    Clique em "Gerar Tudo" para começar a criar conteúdo automático para seus temas selecionados.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2">
+                        <Plus className="w-5 h-5" />
+                        <span>Criar Manualmente</span>
+                    </button>
+                    <Link
+                        to="/editor"
+                        className="border border-white/30 text-white px-8 py-3 rounded-xl font-medium hover:bg-white/10 transition-all duration-200"
+                    >
+                        Ir para Editor
+                    </Link>
+                    </div>
                 </div>
               )}
             </div>

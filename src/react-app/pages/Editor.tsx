@@ -18,6 +18,7 @@ import {
   Grid,
   Square
 } from 'lucide-react';
+import { createContentItem } from '@/shared/apiClient';
 
 export default function Editor() {
   const [selectedTemplate, setSelectedTemplate] = useState('corporativo');
@@ -111,7 +112,21 @@ export default function Editor() {
               <button className="flex items-center space-x-2 text-white/80 hover:text-white transition-colors">
                 <Redo className="w-4 h-4" />
               </button>
-              <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2">
+              <button
+                onClick={async () => {
+                  // In a real app, we'd serialize the canvas state.
+                  // For now, we'll just save a reference to the template.
+                  const contentToSave = {
+                    title: `Editor Project - ${selectedTemplate}`,
+                    content_type: 'image',
+                    status: 'draft',
+                    content_data: { template: selectedTemplate, elements: [] }
+                  };
+                  // HACK: Hardcoding project ID 1 for now
+                  await createContentItem("1", contentToSave);
+                }}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center space-x-2"
+              >
                 <Save className="w-4 h-4" />
                 <span>Salvar</span>
               </button>

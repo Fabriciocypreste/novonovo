@@ -25,20 +25,22 @@ export default function Footer() {
               Plataforma completa de marketing digital com IA. 
               Crie conteúdo profissional em minutos.
             </p>
+            {/* accessibility-fix: issue-4 - Social media links missing accessible names */}
             <div className="flex space-x-4">
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
-                <Facebook className="w-5 h-5" />
+              <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Siga-nos no Facebook">
+                <Facebook className="w-5 h-5" aria-hidden="true" />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
-                <Twitter className="w-5 h-5" />
+              <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Siga-nos no Twitter">
+                <Twitter className="w-5 h-5" aria-hidden="true" />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
-                <Instagram className="w-5 h-5" />
+              <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Siga-nos no Instagram">
+                <Instagram className="w-5 h-5" aria-hidden="true" />
               </a>
-              <a href="#" className="text-white/60 hover:text-white transition-colors">
-                <Linkedin className="w-5 h-5" />
+              <a href="#" className="text-white/60 hover:text-white transition-colors" aria-label="Siga-nos no LinkedIn">
+                <Linkedin className="w-5 h-5" aria-hidden="true" />
               </a>
             </div>
+            {/* /accessibility-fix */}
           </div>
 
           {/* Produto */}

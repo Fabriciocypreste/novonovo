@@ -101,13 +101,15 @@ export default function TestimonialsSlider() {
             {testimonials.map((testimonial) => (
               <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
                 <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-8 text-center">
+                  {/* accessibility-fix: issue-8 - More descriptive alt text */}
                   <div className="flex justify-center mb-6">
                     <img
                       src={testimonial.image}
-                      alt={testimonial.name}
+                      alt={`Foto de ${testimonial.name}, ${testimonial.role} na ${testimonial.company}`}
                       className="w-20 h-20 rounded-full object-cover border-4 border-purple-400 shadow-lg"
                     />
                   </div>
+                  {/* /accessibility-fix */}
                   
                   <div className="flex justify-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -130,23 +132,28 @@ export default function TestimonialsSlider() {
           </div>
         </div>
 
+        {/* accessibility-fix: issue-2 - Navigation buttons missing accessible names */}
         {/* Navigation Buttons */}
         <button
           onClick={prevTestimonial}
           className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-white/20 backdrop-blur-sm border border-white/30 text-white p-3 rounded-full hover:bg-white/30 transition-all duration-200"
+          aria-label="Depoimento anterior"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6" aria-hidden="true" />
         </button>
         
         <button
           onClick={nextTestimonial}
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-white/20 backdrop-blur-sm border border-white/30 text-white p-3 rounded-full hover:bg-white/30 transition-all duration-200"
+          aria-label="Próximo depoimento"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-6 h-6" aria-hidden="true" />
         </button>
+        {/* /accessibility-fix */}
 
+        {/* accessibility-fix: issue-2 - Dot indicator buttons missing accessible names */}
         {/* Dots Indicator */}
-        <div className="flex justify-center space-x-2 mt-8">
+        <div className="flex justify-center space-x-2 mt-8" role="tablist" aria-label="Navegação de depoimentos">
           {testimonials.map((_, index) => (
             <button
               key={index}
@@ -156,9 +163,13 @@ export default function TestimonialsSlider() {
                   ? 'bg-purple-400 scale-125' 
                   : 'bg-white/40 hover:bg-white/60'
               }`}
+              aria-label={`Ir para depoimento ${index + 1}`}
+              aria-selected={index === currentIndex}
+              role="tab"
             />
           ))}
         </div>
+        {/* /accessibility-fix */}
       </div>
     </div>
   );

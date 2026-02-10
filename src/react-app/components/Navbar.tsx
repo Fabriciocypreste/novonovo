@@ -59,20 +59,25 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
+          {/* accessibility-fix: issue-2 - Mobile menu button missing accessible name */}
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-600 hover:text-purple-600 p-2"
+              aria-label={isOpen ? "Fechar menu de navegação" : "Abrir menu de navegação"}
+              aria-expanded={isOpen}
+              aria-controls="mobile-menu"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
             </button>
           </div>
+          {/* /accessibility-fix */}
         </div>
       </div>
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div id="mobile-menu" className="md:hidden bg-white border-t border-gray-200">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {navigation.map((item) => {
               const Icon = item.icon;

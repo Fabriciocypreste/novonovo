@@ -1,0 +1,9 @@
+# This is an example file for local development environment variables.
+# Copy this file to .dev.vars and replace the placeholder values with your actual API keys.
+# These variables are used by the Cloudflare Worker for local development.
+
+# Get your OpenAI API key from https://platform.openai.com/api-keys
+OPENAI_API_KEY="your-openai-api-key-here"
+
+# Get your Google Gemini API key from https://ai.google.dev/
+GOOGLE_GEMINI_API_KEY="your-google-gemini-api-key-here"

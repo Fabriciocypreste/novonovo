@@ -17,10 +17,12 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
+import { getContentItems } from '@/shared/apiClient';
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [scheduledPosts, setScheduledPosts] = useState<any[]>([]);
   // const [view, setView] = useState('month');
 
   useEffect(() => {
@@ -31,6 +33,25 @@ export default function Calendar() {
       document.head.appendChild(link);
     };
     loadFont();
+
+    async function fetchContent() {
+        // HACK: Hardcoding project ID 1 for now.
+        // In a real app, this would come from a project selector.
+        const result = await getContentItems("1");
+        if(result.success && result.data) {
+            const formattedPosts = result.data.map(item => ({
+                id: item.id,
+                title: item.title,
+                platform: item.platform || 'instagram',
+                time: item.scheduled_at ? new Date(item.scheduled_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+                date: item.scheduled_at ? item.scheduled_at.split('T')[0] : '',
+                status: item.status,
+                engagement: item.engagement_estimate || 'N/A'
+            }));
+            setScheduledPosts(formattedPosts);
+        }
+    }
+    fetchContent();
   }, []);
 
   const months = [
@@ -39,45 +60,6 @@ export default function Calendar() {
   ];
 
   const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-
-  const scheduledPosts = [
-    {
-      id: 1,
-      title: 'Post sobre Marketing Digital',
-      platform: 'instagram',
-      time: '09:00',
-      date: '2024-09-22',
-      status: 'scheduled',
-      engagement: '2.5K'
-    },
-    {
-      id: 2,
-      title: 'Vídeo Tutorial React',
-      platform: 'youtube',
-      time: '14:00',
-      date: '2024-09-22',
-      status: 'scheduled',
-      engagement: '1.2K'
-    },
-    {
-      id: 3,
-      title: 'Dicas de Produtividade',
-      platform: 'facebook',
-      time: '18:00',
-      date: '2024-09-23',
-      status: 'scheduled',
-      engagement: '850'
-    },
-    {
-      id: 4,
-      title: 'Thread sobre IA',
-      platform: 'twitter',
-      time: '10:30',
-      date: '2024-09-24',
-      status: 'scheduled',
-      engagement: '3.1K'
-    }
-  ];
 
   const quickSchedule = [
     { time: '09:00', label: 'Manhã', optimal: true },
